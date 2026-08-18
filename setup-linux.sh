@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-echo "== Bigfish Linux 开发环境准备 =="
+echo "== Saoirse Linux 开发环境准备 =="
 
 # 1. 检查 Node（dsh 需要 Node >= 22）
 if ! command -v node >/dev/null 2>&1; then
@@ -27,5 +27,5 @@ fi
 npm install
 
 # 4. 启动
-echo "== 启动 Bigfish =="
+echo "== 启动 Saoirse =="
 npm start

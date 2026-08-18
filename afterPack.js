@@ -1,6 +1,6 @@
 'use strict';
 /**
- * afterPack hook: embed the Bigfish icon + version metadata into the Windows
+ * afterPack hook: embed the Saoirse icon + version metadata into the Windows
  * executable ourselves, because electron-builder's built-in rcedit step needs
  * the winCodeSign archive whose macOS dylib symlinks fail to extract on a
  * Windows box without Developer Mode. The standalone rcedit binary is bundled
@@ -21,16 +21,17 @@ exports.default = async function afterPack(context) {
     return;
   }
   const exe = path.join(context.appOutDir, context.packager.appInfo.productFilename + '.exe');
+  const version = `${context.packager.appInfo.version}.0`;
   execFileSync(
     rcedit,
     [
       exe,
       '--set-icon', icon,
-      '--set-version-string', 'ProductName', 'Bigfish',
-      '--set-version-string', 'FileDescription', 'Bigfish',
-      '--set-version-string', 'CompanyName', 'Bigfish',
-      '--set-file-version', '0.1.0.0',
-      '--set-product-version', '0.1.0.0',
+      '--set-version-string', 'ProductName', 'Saoirse',
+      '--set-version-string', 'FileDescription', 'Saoirse Desktop Companion',
+      '--set-version-string', 'CompanyName', 'Saoirse Project Contributors',
+      '--set-file-version', version,
+      '--set-product-version', version,
     ],
     { stdio: 'inherit' },
   );

@@ -1,14 +1,13 @@
 {
-  "name": "bigfish",
-  "version": "0.1.0",
-  "description": "Bigfish — Electron desktop shell for DeepSeek Harness",
+  "name": "saoirse-desktop",
+  "version": "0.4.1",
+  "description": "Saoirse — an anime-inspired desktop companion for DeepSeek Harness",
   "private": true,
   "main": "main.js",
   "author": {
-    "name": "Bigfish",
-    "email": "643820309@qq.com"
+    "name": "Saoirse Project Contributors"
   },
-  "homepage": "https://github.com/turtle2209/Bigfish",
+  "homepage": "https://example.invalid/saoirse-desktop",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -17,20 +16,23 @@
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
     "dist:linux": "electron-builder --linux",
-    "icons": "node make-icons.js"
+    "icons": "node make-icons.js",
+    "runtime:win": "node download-node.js"
   },
   "dependencies": {},
   "devDependencies": {
     "electron": "^33.2.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "sharp": "^0.34.3"
   },
   "build": {
-    "appId": "com.bigfish.app",
-    "productName": "Bigfish",
+    "appId": "app.saoirse.desktop",
+    "productName": "Saoirse",
     "directories": {
       "output": "dist"
     },
-    "asar": false,
+    "asar": true,
+    "compression": "normal",
     "npmRebuild": false,
     "afterPack": "afterPack.js",
     "files": [
@@ -53,6 +55,10 @@
       "!analyze-pet.js",
       "!update-pet-frames.js",
       "!f00eacea082fad95a74d30b4206e1954.jpg",
+      "!proofshot-artifacts/**",
+      "!work-welcome*.png",
+      "!work-*.png",
+      "!work-*/**",
       "!README.md",
       "!.gitignore"
     ],
@@ -64,6 +70,10 @@
       {
         "from": "dsh-bundle/node_modules",
         "to": "dsh/node_modules"
+      },
+      {
+        "from": "bundled-skills",
+        "to": "bundled-skills"
       }
     ],
     "win": {
@@ -80,7 +90,7 @@
       "createStartMenuShortcut": true,
       "runAfterFinish": true,
       "include": "build/installer.nsh",
-      "shortcutName": "Bigfish"
+      "shortcutName": "Saoirse"
     },
     "mac": {
       "target": [

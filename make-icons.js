@@ -8,7 +8,7 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
-const src = path.join(__dirname, 'build', 'icon_background_removed.png');
+const src = path.join(__dirname, 'assets', 'saoirse-mark.svg');
 const buildDir = path.join(__dirname, 'build');
 const assetsDir = path.join(__dirname, 'assets');
 fs.mkdirSync(buildDir, { recursive: true });

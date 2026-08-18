@@ -17,7 +17,7 @@
     #bubble {
       position: absolute; top: 2px; left: 50%;
       transform: translateX(-50%);
-      background: #fff; color: #333;
+      background: rgba(7, 20, 38, .94); color: #f5fbff;
       padding: 9px 14px; border-radius: 14px;
       font-size: 14px; line-height: 1.5;
       width: max-content;
@@ -26,7 +26,9 @@
       word-break: break-word;
       text-align: center;
       display: none;
-      box-shadow: 0 3px 12px rgba(0,0,0,.3);
+      border: 1px solid rgba(120, 231, 246, .48);
+      box-shadow: 0 8px 24px rgba(0,0,0,.34), 0 0 18px rgba(120,231,246,.12);
+      font-family: "Segoe UI Variable Text", "Microsoft YaHei UI", sans-serif;
       z-index: 2;
     }
     #bubble.show { display: block; animation: pop .18s ease-out; }

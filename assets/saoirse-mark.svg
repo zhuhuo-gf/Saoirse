@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Saoirse logo</title>
+  <defs>
+    <linearGradient id="ocean" x1="80" y1="64" x2="432" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#142A52"/>
+      <stop offset="1" stop-color="#071426"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="134" y1="110" x2="386" y2="394" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#78E7F6"/>
+      <stop offset="1" stop-color="#8D9CFF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="224" fill="url(#ocean)"/>
+  <circle cx="256" cy="256" r="187" fill="none" stroke="url(#moon)" stroke-width="18" stroke-linecap="round" stroke-dasharray="790 250" transform="rotate(-34 256 256)"/>
+  <path fill="#F5FBFF" d="M134 278c20-62 79-103 148-95 45 5 81 27 105 62 14 20 36 25 57 12-4 31-25 51-58 55-22 42-65 70-115 70-64 0-119-43-137-104Zm91-24c-17 0-31 13-31 30s14 30 31 30c18 0 32-13 32-30s-14-30-32-30Z"/>
+  <path fill="#FF8FB7" d="M376 214c20-26 48-37 82-31-7 28-25 47-55 55 27 11 43 32 47 63-33 1-58-13-75-42l1-45Z"/>
+  <circle cx="307" cy="246" r="9" fill="#071426"/>
+  <path d="M199 191c-9-29 4-52 39-69 2 35-11 58-39 69Z" fill="#78E7F6"/>
+  <path d="M167 171c-3-22 8-39 33-50-1 26-12 43-33 50Z" fill="#8D9CFF"/>
+</svg>

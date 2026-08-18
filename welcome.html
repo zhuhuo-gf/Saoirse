@@ -2,103 +2,202 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <title>Bigfish 新手向导</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saoirse 初次航行</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
+    :root {
+      color-scheme: dark;
+      --abyss: #071426;
+      --deep: #0c1e38;
+      --panel: rgba(13, 31, 57, .88);
+      --line: rgba(120, 231, 246, .22);
+      --cyan: #78e7f6;
+      --periwinkle: #8d9cff;
+      --coral: #ff8fb7;
+      --pearl: #f5fbff;
+      --muted: #a8bbd5;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
     body {
-      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
-      background: linear-gradient(160deg, #eef4ff 0%, #f8fbff 100%);
-      color: #1f2a44;
-      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      color: var(--pearl);
+      background:
+        radial-gradient(circle at 77% 10%, rgba(120, 231, 246, .15), transparent 34%),
+        radial-gradient(circle at 10% 86%, rgba(255, 143, 183, .10), transparent 30%),
+        var(--abyss);
+      font-family: "Segoe UI Variable Text", "Microsoft YaHei UI", sans-serif;
       user-select: none;
     }
-    #app { width: 460px; background: #fff; border-radius: 18px; box-shadow: 0 10px 40px rgba(40,70,160,.16); padding: 34px 34px 28px; }
-    .step { display: none; animation: fade .25s ease; }
-    .step.active { display: block; }
-    @keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity:1; transform:none;} }
-
-    .logo { font-size: 44px; text-align: center; }
-    h1 { font-size: 22px; text-align: center; margin: 8px 0 4px; }
-    .sub { text-align: center; color: #6b7a99; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
-    .sub b { color: #4d6bfe; }
-
-    .tag { text-align: center; margin-bottom: 18px; }
-    .tag span { display:inline-block; background:#eef1ff; color:#4d6bfe; border-radius: 20px; padding:4px 12px; font-size:12px; margin:0 3px; }
-
-    .card { background:#f7f9ff; border-radius: 12px; padding: 14px 16px; font-size: 13.5px; line-height: 1.7; color:#3d4a63; margin-bottom: 14px; }
-    .card ol { padding-left: 18px; }
-    .card li { margin: 4px 0; }
-
-    button {
-      display:block; width:100%; border:none; cursor:pointer;
-      font-size:15px; font-weight:600; border-radius: 11px; padding: 13px;
-      transition: transform .05s ease, opacity .2s;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .26;
+      background-image: radial-gradient(circle, rgba(245, 251, 255, .65) 0 1px, transparent 1.5px);
+      background-size: 56px 56px;
+      mask-image: linear-gradient(to bottom, #000, transparent 72%);
     }
-    button:active { transform: scale(.98); }
-    button.primary { background:#4d6bfe; color:#fff; margin-bottom:10px; }
-    button.primary:hover { background:#3f5bf0; }
-    button.ghost { background:transparent; color:#4d6bfe; border:1.5px solid #c7d2ff; }
-    button.ghost:hover { background:#f0f4ff; }
-    button.link { background:#fff; color:#4d6bfe; border:1.5px solid #4d6bfe; margin-bottom:10px; }
-    button.link:hover { background:#eef2ff; }
-
-    .hint { font-size:12px; color:#8a97b3; text-align:center; margin-top:8px; line-height:1.6; }
-    .steps { display:flex; justify-content:center; gap:6px; margin-bottom:20px; }
-    .steps i { width:8px; height:8px; border-radius:50%; background:#dbe2f5; }
-    .steps i.on { background:#4d6bfe; }
+    #app {
+      position: relative;
+      display: grid;
+      grid-template-columns: 238px minmax(0, 1fr);
+      width: 100%;
+      height: 100%;
+    }
+    .brand-rail {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 38px 30px 32px;
+      border-right: 1px solid var(--line);
+      background: rgba(4, 13, 27, .42);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+    .brand img { width: 48px; height: 48px; filter: drop-shadow(0 8px 18px rgba(120, 231, 246, .18)); }
+    .brand strong {
+      display: block;
+      font: 650 24px/1 "Segoe UI Variable Display", sans-serif;
+      letter-spacing: .04em;
+    }
+    .brand small { display: block; margin-top: 6px; color: var(--muted); font: 11px/1 "Cascadia Code", monospace; letter-spacing: .14em; }
+    .orbit {
+      position: relative;
+      width: 144px;
+      height: 144px;
+      margin: 72px auto 0;
+      border: 1px solid rgba(141, 156, 255, .36);
+      border-radius: 50%;
+      background: url("assets/saoirse-girl-observatory.png") 78% 22% / auto 190%;
+      box-shadow: inset 0 0 0 7px rgba(7, 20, 38, .68), 0 16px 42px rgba(0, 0, 0, .28);
+    }
+    .orbit::before, .orbit::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+    .orbit::before { inset: -13px; border: 1px dashed rgba(120, 231, 246, .25); }
+    .orbit::after {
+      width: 10px; height: 10px; top: 13px; left: 26px;
+      background: var(--coral);
+      box-shadow: 0 0 22px var(--coral);
+      animation: breathe 2.8s ease-in-out infinite;
+    }
+    .route-label { margin-top: auto; color: #7e94b3; font: 11px/1.7 "Cascadia Code", monospace; letter-spacing: .08em; }
+    .route-label b { color: var(--cyan); font-weight: 500; }
+    .content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 34px 48px 36px;
+    }
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 38px;
+      color: #7890b0;
+      font: 11px/1 "Cascadia Code", monospace;
+      letter-spacing: .1em;
+    }
+    .progress::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+    .steps { display: flex; gap: 7px; }
+    .steps i { width: 30px; height: 3px; border-radius: 99px; background: #243957; transition: background .25s, box-shadow .25s; }
+    .steps i.on { background: var(--cyan); box-shadow: 0 0 12px rgba(120, 231, 246, .42); }
+    .step { display: none; flex: 1; animation: surface .32s ease-out; }
+    .step.active { display: flex; flex-direction: column; }
+    .eyebrow { color: var(--coral); font: 600 11px/1 "Cascadia Code", monospace; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { max-width: 470px; margin: 14px 0 12px; font: 620 36px/1.2 "Segoe UI Variable Display", "Microsoft YaHei UI", sans-serif; letter-spacing: -.025em; }
+    h1 { color: #f7fcff; text-shadow: 0 2px 20px rgba(120, 231, 246, .12); }
+    .sub { max-width: 480px; color: #c0d2e8; font-size: 14px; line-height: 1.75; }
+    .sub b { color: var(--cyan); font-weight: 600; }
+    .capabilities { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 30px; }
+    .chip { padding: 14px 12px; border-top: 1px solid rgba(120, 231, 246, .34); color: #dce8f5; font-size: 12px; }
+    .chip em { display: block; margin-bottom: 7px; color: var(--cyan); font: normal 11px/1 "Cascadia Code", monospace; }
+    .card {
+      margin-top: 24px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, .18);
+      color: #cad8ea;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .card ol { margin: 0; padding-left: 21px; }
+    .card li + li { margin-top: 6px; }
+    .card b { color: var(--pearl); }
+    .actions { display: flex; gap: 10px; margin-top: auto; padding-top: 28px; }
+    button {
+      min-height: 44px;
+      padding: 0 20px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--pearl);
+      font: 600 13px/1 "Segoe UI Variable Text", "Microsoft YaHei UI", sans-serif;
+      transition: transform .15s, border-color .2s, background .2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; }
+    button.primary { margin-left: auto; background: linear-gradient(100deg, #668df6, #8277e8); box-shadow: 0 10px 28px rgba(88, 126, 234, .34); }
+    button.primary:hover { background: linear-gradient(100deg, #668cf6, #8479e7); }
+    button.ghost { border-color: var(--line); background: rgba(120, 231, 246, .05); color: var(--cyan); }
+    .hint { align-self: center; color: #7188a8; font-size: 11px; }
+    @keyframes surface { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+    @keyframes breathe { 50% { opacity: .55; transform: scale(.75); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
   </style>
 </head>
 <body>
-  <div id="app">
-    <div class="steps">
-      <i class="on"></i><i></i><i></i>
-    </div>
-
-    <!-- Step 1: 欢迎 -->
-    <section class="step active" id="step-1">
-      <div class="logo">🐟</div>
-      <h1>欢迎使用 Bigfish</h1>
-      <div class="sub">让 AI 帮你搞定<b>小组作业</b><br>写报告、做 PPT、查资料、整笔记</div>
-      <div class="tag"><span>📝 报告</span><span>📊 PPT</span><span>🔍 查资料</span></div>
-      <button class="primary" onclick="go(2)">开始设置 →</button>
-      <div class="hint">只需 1 分钟，配置一次就能一直用</div>
-    </section>
-
-    <!-- Step 2: 获取 Key -->
-    <section class="step" id="step-2">
-      <div class="logo">🔑</div>
-      <h1>需要一个 API Key</h1>
-      <div class="sub">就像给 AI 充点「话费」<br>学生用量很低，充 10 块能用很久</div>
-      <div class="card">
-        <ol>
-          <li>去 DeepSeek 官网<b>注册/登录</b></li>
-          <li>在「API Keys」页面<b>创建一个 Key</b>并复制</li>
-          <li>新用户通常有<b>免费额度</b>，不够再充值</li>
-        </ol>
+  <main id="app">
+    <aside class="brand-rail">
+      <div class="brand">
+        <img src="assets/saoirse-mark.svg" alt="">
+        <div><strong>Saoirse</strong><small>DEEP SEA DESK</small></div>
       </div>
-      <button class="link" onclick="openUrl('https://platform.deepseek.com/api_keys')">🔑 去获取 API Key</button>
-      <button class="ghost" onclick="openUrl('https://platform.deepseek.com/top_up')">💰 去充值（余额不足时）</button>
-      <div class="hint">按钮会在浏览器打开 DeepSeek 官网</div>
-      <br>
-      <button class="primary" onclick="go(3)">我拿到 Key 了，下一步 →</button>
-    </section>
+      <div class="orbit" aria-hidden="true"></div>
+      <div class="route-label"><b>LOCAL FIRST</b><br>DeepSeek Harness inside<br>Data stays on this device</div>
+    </aside>
 
-    <!-- Step 3: 配置说明 + 开始使用 -->
-    <section class="step" id="step-3">
-      <div class="logo">✅</div>
-      <h1>把 Key 填进软件</h1>
-      <div class="sub">为了你的 Key 安全，我们<b>不收集</b>它<br>请把它填进软件自带的设置里</div>
-      <div class="card">
-        <ol>
-          <li>点击下方「开始使用」进入主界面</li>
-          <li>打开软件右上角/侧边栏的<b>「设置」</b></li>
-          <li>找到<b>「模型 / API Key」</b>，把 Key 粘贴进去并保存</li>
-        </ol>
-      </div>
-      <button class="primary" onclick="finish()">开始使用 →</button>
+    <section class="content">
+      <header class="progress"><span>INITIAL VOYAGE</span><div class="steps"><i class="on"></i><i></i><i></i></div></header>
+
+      <section class="step active" id="step-1">
+        <div class="eyebrow">01 · 欢迎登舰</div>
+        <h1>让鲸灵陪你潜入<br>更专注的创作海域。</h1>
+        <p class="sub">Saoirse 将 DeepSeek Harness 装进桌面，帮你处理报告、演示文稿、资料与日常写作。后台运行，需要时一键唤醒。</p>
+        <div class="capabilities">
+          <div class="chip"><em>WRITE</em>报告与文案</div>
+          <div class="chip"><em>SLIDES</em>PPT 与提纲</div>
+          <div class="chip"><em>RESEARCH</em>资料与总结</div>
+        </div>
+        <div class="actions"><span class="hint">大约 1 分钟完成配置</span><button class="primary" onclick="go(2)">开始配置</button></div>
+      </section>
+
+      <section class="step" id="step-2">
+        <div class="eyebrow">02 · 获取通行凭证</div>
+        <h1>连接你的 DeepSeek API。</h1>
+        <p class="sub">API Key 由 DeepSeek 提供。Saoirse <b>不会上传或收集</b>你的密钥，它只保存在本机的 Harness 配置中。</p>
+        <div class="card"><ol><li>登录 DeepSeek 开放平台</li><li>在「API Keys」页面创建并复制密钥</li><li>余额不足时再前往充值页面</li></ol></div>
+        <div class="actions"><button class="ghost" onclick="openUrl('https://platform.deepseek.com/api_keys')">打开 API Keys</button><button class="ghost" onclick="openUrl('https://platform.deepseek.com/top_up')">查看余额</button><button class="primary" onclick="go(3)">我已拿到 Key</button></div>
+      </section>
+
+      <section class="step" id="step-3">
+        <div class="eyebrow">03 · 准备下潜</div>
+        <h1>最后，在设置里保存密钥。</h1>
+        <p class="sub">进入主界面后打开「设置」，找到模型或 API Key 配置，粘贴后保存。之后 Saoirse 会一直记住这台设备的配置。</p>
+        <div class="card"><ol><li>进入 Saoirse 主界面</li><li>打开侧边栏或右上角的「设置」</li><li>保存 API Key，然后开始第一次对话</li></ol></div>
+        <div class="actions"><span class="hint">快捷键 Ctrl + Shift + D</span><button class="primary" onclick="finish()">进入 Saoirse</button></div>
+      </section>
     </section>
-  </div>
+  </main>
   <script src="welcome.js"></script>
 </body>
 </html>

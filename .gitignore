@@ -12,3 +12,6 @@ release/
 *.log
 .DS_Store
 dsh-bundle/node_modules/
+proofshot-artifacts/
+work-*/
+work-*.png

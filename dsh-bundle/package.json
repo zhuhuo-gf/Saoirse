@@ -1,8 +1,8 @@
 {
-  "name": "bigfish-dsh-bundle",
+  "name": "saoirse-dsh-bundle",
   "version": "0.1.0",
   "private": true,
-  "description": "Production-only node_modules bundle for the Bigfish desktop app",
+  "description": "Production-only DeepSeek Harness dependencies for Saoirse",
   "dependencies": {
     "@deepseek-ai/dsh": "0.1.0-rc.6"
   }

@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-src http://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Saoirse 工作台</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --abyss: #07101f;
+      --trench: #0a1729;
+      --glass: rgba(10, 28, 48, .92);
+      --glass-soft: rgba(12, 35, 58, .76);
+      --line: rgba(132, 207, 233, .15);
+      --line-strong: rgba(121, 221, 255, .34);
+      --moon: #79ddff;
+      --moon-soft: #b8efff;
+      --pearl: #edf9ff;
+      --muted: #8ba8b8;
+      --coral: #ff8ca3;
+      --warning: #ffc36d;
+      --danger: #ff758f;
+      --rail-width: 278px;
+      --terminal-height: 232px;
+      font-family: "Segoe UI Variable Text", "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      color: var(--pearl);
+      background: rgba(5, 14, 27, .88);
+      letter-spacing: .01em;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+
+    .app-shell {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: var(--rail-width) minmax(0, 1fr);
+      background:
+        linear-gradient(90deg, rgba(5, 16, 30, .98) 0 var(--rail-width), rgba(5, 14, 26, .91) var(--rail-width) 100%);
+    }
+
+    .navigation-rail {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-rows: auto auto minmax(140px, 1fr) 116px;
+      min-width: 0;
+      border-right: 1px solid var(--line-strong);
+      background: rgba(6, 20, 37, .94);
+      box-shadow: 12px 0 34px rgba(0, 0, 0, .22);
+      overflow: hidden;
+    }
+
+    .navigation-rail::before {
+      content: "";
+      position: absolute;
+      left: 22px;
+      top: 104px;
+      bottom: 118px;
+      width: 1px;
+      background: linear-gradient(var(--moon), rgba(121, 221, 255, .05));
+      opacity: .38;
+      pointer-events: none;
+    }
+
+    .brand {
+      height: 72px;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border-bottom: 1px solid var(--line);
+    }
+    .sonar-mark {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid rgba(121, 221, 255, .44);
+      border-radius: 50%;
+      background: #0b263d;
+    }
+    .sonar-mark::before,
+    .sonar-mark::after {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      border: 1px solid rgba(121, 221, 255, .16);
+      border-radius: 50%;
+    }
+    .sonar-mark::after { inset: -9px; opacity: .42; }
+    .sonar-mark img { width: 30px; height: 30px; }
+    .brand-copy { min-width: 0; }
+    .brand-name {
+      font-family: "Segoe UI Variable Display", "Microsoft YaHei UI", sans-serif;
+      font-size: 18px;
+      font-weight: 680;
+      line-height: 1.05;
+      letter-spacing: .04em;
+    }
+    .brand-kicker {
+      margin-top: 4px;
+      color: var(--moon);
+      font: 10px/1.1 "Cascadia Code", Consolas, monospace;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .project-section {
+      padding: 13px 12px 11px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 28px;
+      padding-left: 17px;
+    }
+    .section-heading h2 {
+      margin: 0;
+      color: var(--muted);
+      font: 600 11px/1 "Cascadia Code", Consolas, monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .icon-button, .primary-button, .ghost-button, .project-button, .tree-row {
+      border: 0;
+      cursor: pointer;
+    }
+    .icon-button {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(121, 221, 255, .06);
+      color: var(--moon-soft);
+    }
+    .icon-button:hover { border-color: var(--line-strong); background: rgba(121, 221, 255, .12); }
+    .project-list {
+      max-height: 162px;
+      margin-top: 8px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .project-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 26px;
+      align-items: center;
+      gap: 4px;
+      margin: 3px 0;
+      padding-left: 7px;
+      border-radius: 9px;
+    }
+    .project-item::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      width: 5px;
+      height: 5px;
+      border: 1px solid rgba(121, 221, 255, .5);
+      border-radius: 50%;
+      background: var(--trench);
+    }
+    .project-item.active { background: rgba(121, 221, 255, .09); }
+    .project-item.active::before { background: var(--moon); box-shadow: 0 0 10px rgba(121, 221, 255, .8); }
+    .project-button {
+      min-width: 0;
+      padding: 8px 4px 8px 17px;
+      text-align: left;
+      background: transparent;
+    }
+    .project-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+    .project-path { display: block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font: 10px/1.2 "Cascadia Code", Consolas, monospace; }
+    .remove-project {
+      opacity: 0;
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .project-item:hover .remove-project, .remove-project:focus-visible { opacity: 1; }
+    .remove-project:hover { color: var(--coral); background: rgba(255, 140, 163, .1); }
+
+    .file-section { min-height: 0; padding: 11px 8px 8px 12px; overflow: hidden; }
+    .file-tree {
+      height: calc(100% - 34px);
+      margin-top: 6px;
+      padding: 2px 2px 16px 8px;
+      overflow: auto;
+      scrollbar-width: thin;
+    }
+    .tree-children { margin-left: 14px; border-left: 1px solid rgba(121, 221, 255, .08); }
+    .tree-row {
+      width: 100%;
+      height: 29px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 7px;
+      border-radius: 6px;
+      background: transparent;
+      color: #c9e1ec;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .tree-row:hover { background: rgba(121, 221, 255, .075); color: var(--pearl); }
+    .tree-icon { width: 13px; color: var(--moon); font: 10px/1 "Cascadia Code", monospace; }
+    .tree-name { overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+    .tree-row.file .tree-icon { color: #7894a5; }
+    .empty-tree { padding: 24px 15px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+
+    .companion-card {
+      position: relative;
+      min-height: 116px;
+      border-top: 1px solid var(--line);
+      overflow: hidden;
+      background: #091a2c;
+    }
+    .companion-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #091a2c 0%, rgba(9, 26, 44, .65) 45%, rgba(9, 26, 44, .08) 100%), url("assets/saoirse-girl-observatory.png") 72% 24% / 190% auto no-repeat;
+      opacity: .78;
+    }
+    .companion-copy { position: absolute; left: 17px; bottom: 15px; max-width: 155px; }
+    .companion-copy strong { display: block; font-size: 12px; font-weight: 650; }
+    .companion-copy span { display: block; margin-top: 4px; color: var(--moon-soft); font-size: 10px; }
+
+    .workbench {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 58px minmax(0, 1fr) var(--terminal-height);
+      transition: grid-template-rows .22s ease;
+    }
+    body[data-terminal-open="false"] .workbench { grid-template-rows: 58px minmax(0, 1fr) 38px; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 15px 0 18px;
+      border-bottom: 1px solid var(--line-strong);
+      background: rgba(6, 18, 33, .93);
+    }
+    .active-route { min-width: 0; flex: 1; }
+    .route-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 650; }
+    .route-name::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--moon); box-shadow: 0 0 12px rgba(121, 221, 255, .75); }
+    .route-path { margin-top: 3px; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; font: 10px/1.2 "Cascadia Code", Consolas, monospace; }
+    .backend-state { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .backend-state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+    .backend-state.ready::before { background: #72e6b2; }
+    .backend-state.error::before { background: var(--danger); }
+    .backend-state.loading::before { animation: pulse 1.15s ease-in-out infinite; }
+    @keyframes pulse { 50% { transform: scale(1.7); opacity: .35; } }
+    .ghost-button, .primary-button {
+      min-height: 33px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .ghost-button { border: 1px solid var(--line); background: rgba(121, 221, 255, .05); color: #c3dce8; }
+    .ghost-button:hover { border-color: var(--line-strong); background: rgba(121, 221, 255, .1); }
+    .primary-button { border: 1px solid rgba(121, 221, 255, .55); background: #123a52; color: var(--pearl); }
+    .primary-button:hover { background: #174963; }
+
+    .conversation-deck { position: relative; min-height: 0; background: #0a1422; overflow: hidden; }
+    #harnessView { width: 100%; height: 100%; border: 0; background: #0a1422; }
+    .harness-cover {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(7, 16, 31, .92);
+      z-index: 2;
+      transition: opacity .18s ease;
+    }
+    .harness-cover.hidden { opacity: 0; pointer-events: none; }
+    .cover-content { max-width: 430px; padding: 36px; text-align: center; }
+    .cover-orbit { width: 72px; height: 72px; margin: 0 auto 20px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; box-shadow: 0 0 0 12px rgba(121, 221, 255, .035), 0 0 0 24px rgba(121, 221, 255, .018); }
+    .cover-orbit img { width: 44px; height: 44px; }
+    .cover-content h1 { margin: 0; font-size: 21px; font-weight: 650; }
+    .cover-content p { margin: 10px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+    .terminal {
+      min-height: 0;
+      border-top: 1px solid var(--line-strong);
+      background: rgba(5, 14, 26, .97);
+      overflow: hidden;
+    }
+    .terminal-header {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px 0 16px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      user-select: none;
+    }
+    .terminal-title { color: #cfe7f0; font: 600 11px/1 "Cascadia Code", Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .terminal-cwd { min-width: 0; flex: 1; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; font: 10px/1 "Cascadia Code", Consolas, monospace; }
+    .terminal-status { color: #72e6b2; font-size: 10px; }
+    .terminal-status.running { color: var(--warning); }
+    .terminal-actions { display: flex; gap: 5px; }
+    .terminal-actions button { width: auto; padding: 0 8px; }
+    .terminal-body { height: calc(100% - 38px); display: grid; grid-template-rows: minmax(0, 1fr) 38px; }
+    body[data-terminal-open="false"] .terminal-body { display: none; }
+    .terminal-output {
+      margin: 0;
+      padding: 10px 15px;
+      overflow: auto;
+      color: #c8e0e9;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 11px/1.55 "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+      scrollbar-width: thin;
+    }
+    .terminal-input-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 5px 9px 5px 15px; border-top: 1px solid var(--line); }
+    .terminal-prompt { color: var(--moon); font: 700 13px/1 "Cascadia Code", Consolas, monospace; }
+    #terminalInput { width: 100%; height: 27px; border: 0; outline: 0; background: transparent; color: var(--pearl); font: 11px/1 "Cascadia Mono", "Cascadia Code", Consolas, monospace; }
+    #terminalInput::placeholder { color: #587181; }
+    #runCommand { height: 27px; min-height: 27px; padding: 0 11px; }
+
+    .control-dock {
+      position: absolute;
+      z-index: 5;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 410px;
+      display: grid;
+      grid-template-rows: 54px 42px minmax(0, 1fr);
+      border-left: 1px solid var(--line-strong);
+      background: rgba(7, 20, 35, .985);
+      box-shadow: -18px 0 45px rgba(0, 0, 0, .28);
+      transform: translateX(102%);
+      transition: transform .2s ease;
+    }
+    body[data-dock-open="true"] .control-dock { transform: translateX(0); }
+    body[data-dock-open="true"] #harnessView { width: calc(100% - 410px); }
+    body[data-dock-open="true"] .harness-cover { right: 410px; }
+    .dock-head { display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--line); }
+    .dock-title { min-width: 0; flex: 1; }
+    .dock-title strong { display: block; font-size: 13px; }
+    .dock-title span { display: block; margin-top: 2px; color: var(--muted); font: 9px/1.2 "Cascadia Code", monospace; }
+    .dock-tabs { display: grid; grid-template-columns: repeat(6, 1fr); padding: 5px 8px; gap: 3px; border-bottom: 1px solid var(--line); }
+    .dock-tab { min-width: 0; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; }
+    .dock-tab:hover { color: var(--pearl); background: rgba(121, 221, 255, .07); }
+    .dock-tab.active { color: var(--moon-soft); background: rgba(121, 221, 255, .12); }
+    .dock-body { min-height: 0; overflow: hidden; }
+    .dock-panel { display: none; height: 100%; overflow: auto; padding: 14px; scrollbar-width: thin; }
+    .dock-panel.active { display: block; }
+    .panel-intro { margin: 0 0 13px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .panel-toolbar { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 11px; }
+    .panel-toolbar .ghost-button, .panel-toolbar .primary-button { min-height: 30px; padding: 0 9px; font-size: 11px; }
+    .metric-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
+    .metric { padding: 9px; border: 1px solid var(--line); border-radius: 8px; background: rgba(121, 221, 255, .035); }
+    .metric strong { display: block; color: var(--moon-soft); font: 650 16px/1 "Cascadia Code", monospace; }
+    .metric span { display: block; margin-top: 5px; color: var(--muted); font-size: 9px; }
+    .control-list { display: grid; gap: 6px; }
+    .control-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(121, 221, 255, .025); }
+    .control-item.selected { border-color: var(--line-strong); background: rgba(121, 221, 255, .08); }
+    .item-main { min-width: 0; }
+    .item-main strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 600; }
+    .item-main span { display: block; margin-top: 4px; color: var(--muted); font: 9px/1.3 "Cascadia Code", monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .status-chip { min-width: 31px; padding: 3px 5px; border-radius: 5px; background: rgba(255, 195, 109, .11); color: var(--warning); text-align: center; font: 9px/1 "Cascadia Code", monospace; }
+    .status-chip.good { color: #72e6b2; background: rgba(114, 230, 178, .1); }
+    .diff-view { min-height: 150px; max-height: 280px; margin: 10px 0; padding: 10px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: #050e19; color: #bfd6df; white-space: pre; font: 9px/1.5 "Cascadia Mono", Consolas, monospace; scrollbar-width: thin; }
+    .field { display: grid; gap: 5px; margin-bottom: 10px; }
+    .field label { color: var(--muted); font-size: 10px; }
+    .field input, .field textarea, .field select { width: 100%; border: 1px solid var(--line); border-radius: 7px; outline: 0; background: #081727; color: var(--pearl); padding: 8px 9px; font-size: 11px; }
+    .field textarea { min-height: 72px; resize: vertical; font-family: "Cascadia Mono", Consolas, monospace; line-height: 1.45; }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--line-strong); }
+    .section-rule { height: 1px; margin: 15px 0; background: var(--line); }
+    .subheading { margin: 0 0 9px; color: #cfe7f0; font-size: 11px; font-weight: 650; }
+    .inline-actions { display: flex; gap: 5px; }
+    .mini-button { min-height: 25px; padding: 0 7px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; }
+    .mini-button:hover { color: var(--pearl); border-color: var(--line-strong); }
+    .mini-button.danger:hover { color: var(--danger); border-color: rgba(255, 117, 143, .45); }
+    .permission-card { padding: 11px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 9px; cursor: pointer; }
+    .permission-card.active { border-color: var(--line-strong); background: rgba(121, 221, 255, .075); }
+    .permission-card strong { font-size: 12px; }
+    .permission-card p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .warning-note { padding: 9px 10px; border-left: 2px solid var(--warning); background: rgba(255, 195, 109, .055); color: #d4c2a6; font-size: 10px; line-height: 1.55; }
+    .empty-control { padding: 28px 12px; color: var(--muted); text-align: center; font-size: 11px; line-height: 1.6; }
+    .appearance-preview { position: relative; aspect-ratio: 16 / 9; margin-bottom: 13px; border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; background: #061427; }
+    .appearance-preview-image { position: absolute; inset: -10px; background-position: center; background-size: cover; background-repeat: no-repeat; transform: scale(1.02); }
+    .appearance-preview-shade { position: absolute; inset: 0; background: rgba(3, 13, 29, .28); pointer-events: none; }
+    .appearance-preview-label { position: absolute; left: 10px; bottom: 9px; max-width: calc(100% - 20px); padding: 4px 7px; border: 1px solid rgba(184, 239, 255, .22); border-radius: 6px; background: rgba(5, 18, 35, .64); color: var(--moon-soft); backdrop-filter: blur(8px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
+    .range-row { display: grid; grid-template-columns: 66px minmax(0, 1fr) 38px; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .range-row label { color: var(--muted); font-size: 10px; }
+    .range-row input[type="range"] { width: 100%; accent-color: var(--moon); }
+    .range-value { color: var(--moon-soft); text-align: right; font: 10px/1 "Cascadia Code", monospace; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; }
+    .toggle-row span { color: #cfe7f0; font-size: 11px; }
+    .toggle-row input { width: 16px; height: 16px; accent-color: var(--moon); }
+
+    .toast {
+      position: fixed;
+      z-index: 20;
+      right: 18px;
+      top: 70px;
+      max-width: 390px;
+      padding: 11px 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      background: #0d2940;
+      color: var(--pearl);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, .32);
+      font-size: 12px;
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .18s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { border-color: rgba(255, 117, 143, .48); }
+
+    :focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+    @media (max-width: 1180px) {
+      :root { --rail-width: 238px; }
+      .backend-state span { display: none; }
+      .topbar .ghost-button { padding: 0 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body data-terminal-open="true">
+  <div class="app-shell">
+    <aside class="navigation-rail" aria-label="项目导航">
+      <header class="brand">
+        <div class="sonar-mark"><img src="assets/saoirse-mark.svg" alt=""></div>
+        <div class="brand-copy">
+          <div class="brand-name">Saoirse</div>
+          <div class="brand-kicker">Agent workbench · 0.4.1</div>
+        </div>
+      </header>
+
+      <section class="project-section" aria-labelledby="projectsHeading">
+        <div class="section-heading">
+          <h2 id="projectsHeading">航线 / 项目</h2>
+          <button class="icon-button" id="chooseProject" title="打开项目文件夹" aria-label="打开项目文件夹">＋</button>
+        </div>
+        <div class="project-list" id="projectList"></div>
+      </section>
+
+      <section class="file-section" aria-labelledby="filesHeading">
+        <div class="section-heading">
+          <h2 id="filesHeading">项目文件</h2>
+          <button class="icon-button" id="refreshFiles" title="刷新文件树" aria-label="刷新文件树">↻</button>
+        </div>
+        <div class="file-tree" id="fileTree"></div>
+      </section>
+
+      <div class="companion-card" aria-label="鲸灵导航员状态">
+        <div class="companion-copy">
+          <strong>鲸灵导航员</strong>
+          <span id="companionStatus">正在校准深海航线</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="workbench">
+      <header class="topbar">
+        <div class="active-route">
+          <div class="route-name" id="activeProjectName">临时航线</div>
+          <div class="route-path" id="activeProjectPath">尚未选择项目，Harness 使用临时工作区</div>
+        </div>
+        <div class="backend-state loading" id="backendState"><span>正在连接 Harness</span></div>
+        <button class="ghost-button" id="openAppearance">外观</button>
+        <button class="ghost-button" id="openControls">控制舱</button>
+        <button class="ghost-button" id="reloadHarness">刷新对话</button>
+        <button class="ghost-button" id="toggleTerminal">收起终端</button>
+        <button class="primary-button" id="topChooseProject">打开项目</button>
+      </header>
+
+      <section class="conversation-deck" aria-label="DeepSeek Harness 对话">
+        <webview id="harnessView" partition="persist:saoirse-harness"></webview>
+        <div class="harness-cover" id="harnessCover">
+          <div class="cover-content">
+            <div class="cover-orbit"><img src="assets/saoirse-mark.svg" alt=""></div>
+            <h1 id="coverTitle">正在唤醒 DeepSeek Harness</h1>
+            <p id="coverDescription">Saoirse 正在连接本地后端。首次启动可能需要一点时间。</p>
+            <button class="primary-button" id="coverChooseProject">选择项目文件夹</button>
+          </div>
+        </div>
+        <aside class="control-dock" aria-label="Saoirse 控制舱">
+          <header class="dock-head">
+            <div class="dock-title"><strong>Saoirse 控制舱</strong><span>CHANGE · GIT · SKILL · MCP · POLICY</span></div>
+            <button class="icon-button" id="closeControls" aria-label="关闭控制舱">×</button>
+          </header>
+          <nav class="dock-tabs" aria-label="控制舱功能">
+            <button class="dock-tab active" data-panel="changes">变更</button>
+            <button class="dock-tab" data-panel="git">Git</button>
+            <button class="dock-tab" data-panel="skills">技能</button>
+            <button class="dock-tab" data-panel="mcp">MCP</button>
+            <button class="dock-tab" data-panel="appearance">外观</button>
+            <button class="dock-tab" data-panel="policy">权限</button>
+          </nav>
+          <div class="dock-body">
+            <section class="dock-panel active" data-panel-body="changes">
+              <p class="panel-intro">自动轮询 Git 工作区。查看文件差异、创建本地检查点，或安全撤销单个文件。</p>
+              <div class="metric-strip">
+                <div class="metric"><strong id="changeCount">0</strong><span>变更文件</span></div>
+                <div class="metric"><strong id="stagedCount">0</strong><span>已暂存</span></div>
+                <div class="metric"><strong id="checkpointCount">0</strong><span>检查点</span></div>
+              </div>
+              <div class="panel-toolbar">
+                <button class="ghost-button" id="refreshChanges">刷新</button>
+                <button class="primary-button" id="createCheckpoint">创建检查点</button>
+              </div>
+              <div class="control-list" id="changeList"></div>
+              <pre class="diff-view" id="diffView">选择一个变更文件查看 Diff。</pre>
+              <div class="panel-toolbar">
+                <button class="ghost-button" id="stageSelected">暂存选中</button>
+                <button class="ghost-button" id="unstageSelected">取消暂存</button>
+                <button class="ghost-button" id="undoSelected">撤销文件</button>
+              </div>
+              <div class="section-rule"></div>
+              <h3 class="subheading">本地检查点</h3>
+              <div class="control-list" id="checkpointList"></div>
+            </section>
+
+            <section class="dock-panel" data-panel-body="git">
+              <p class="panel-intro">保留清晰的提交节奏。Saoirse 只提交已经暂存的文件。</p>
+              <div class="metric-strip">
+                <div class="metric"><strong id="branchName">—</strong><span>当前分支</span></div>
+                <div class="metric"><strong id="gitChanged">0</strong><span>待处理</span></div>
+                <div class="metric"><strong id="gitStaged">0</strong><span>可提交</span></div>
+              </div>
+              <div class="field"><label for="commitMessage">提交说明</label><input id="commitMessage" maxlength="240" placeholder="feat: 添加新的能力"></div>
+              <div class="panel-toolbar"><button class="primary-button" id="commitChanges">提交已暂存文件</button><button class="ghost-button" id="refreshGit">刷新历史</button></div>
+              <h3 class="subheading">建议验证命令</h3>
+              <div class="control-list" id="validationList"></div>
+              <div class="section-rule"></div>
+              <h3 class="subheading">最近提交</h3>
+              <div class="control-list" id="historyList"></div>
+            </section>
+
+            <section class="dock-panel" data-panel-body="skills">
+              <p class="panel-intro">内置技能只读；个人技能保存在 Harness 用户目录，可编辑、导入并控制自动调用。</p>
+              <div class="panel-toolbar"><button class="primary-button" id="newSkill">新建技能</button><button class="ghost-button" id="importSkill">导入 Markdown</button><button class="ghost-button" id="refreshSkills">刷新</button></div>
+              <div class="control-list" id="skillList"></div>
+              <div class="section-rule"></div>
+              <div class="field"><label for="skillSlug">英文目录名（新建时使用）</label><input id="skillSlug" placeholder="my-skill"></div>
+              <div class="field"><label for="skillEditor">SKILL.md</label><textarea id="skillEditor" style="min-height:260px" spellcheck="false" placeholder="---&#10;name: my-skill&#10;description: 说明何时使用这个技能&#10;---&#10;&#10;# 指令"></textarea></div>
+              <div class="panel-toolbar"><button class="primary-button" id="saveSkill">保存技能</button><button class="ghost-button" id="deleteSkill">移到回收区</button></div>
+            </section>
+
+            <section class="dock-panel" data-panel-body="mcp">
+              <p class="panel-intro">连接 stdio 或 Streamable HTTP MCP。配置只保存环境变量名，不保存令牌明文。</p>
+              <div class="control-list" id="mcpList"></div>
+              <div class="section-rule"></div>
+              <h3 class="subheading" id="mcpFormTitle">添加 MCP 服务器</h3>
+              <div class="field"><label for="mcpName">工具命名空间</label><input id="mcpName" maxlength="32" placeholder="github"></div>
+              <div class="field"><label for="mcpTransport">传输方式</label><select id="mcpTransport"><option value="stdio">stdio 本地进程</option><option value="streamable-http">Streamable HTTP</option></select></div>
+              <div id="mcpStdioFields">
+                <div class="field"><label for="mcpCommand">启动命令</label><input id="mcpCommand" placeholder="npx"></div>
+                <div class="field"><label for="mcpArgs">参数（每行一个）</label><textarea id="mcpArgs" placeholder="-y&#10;@modelcontextprotocol/server-github"></textarea></div>
+                <div class="field"><label for="mcpEnv">环境映射（KEY=本机环境变量）</label><textarea id="mcpEnv" placeholder="GITHUB_TOKEN=GITHUB_TOKEN"></textarea></div>
+              </div>
+              <div id="mcpHttpFields" hidden>
+                <div class="field"><label for="mcpUrl">HTTPS / localhost URL</label><input id="mcpUrl" placeholder="https://example.com/mcp"></div>
+                <div class="field"><label for="mcpHeaders">请求头（Header=环境变量|前缀）</label><textarea id="mcpHeaders" placeholder="Authorization=MCP_TOKEN|Bearer "></textarea></div>
+              </div>
+              <div class="panel-toolbar"><button class="primary-button" id="saveMcp">保存并重连</button><button class="ghost-button" id="resetMcpForm">清空表单</button></div>
+              <div class="warning-note">MCP 能以你的身份调用外部工具。只添加可信服务器，并通过系统环境变量提供密钥。</div>
+            </section>
+
+            <section class="dock-panel" data-panel-body="appearance">
+              <p class="panel-intro">让鲸灵观测站成为 Harness 的真正背景。滤镜只处理图片层，不会模糊文字。</p>
+              <div class="appearance-preview">
+                <div class="appearance-preview-image" id="appearancePreviewImage"></div>
+                <div class="appearance-preview-shade" id="appearancePreviewShade"></div>
+                <span class="appearance-preview-label" id="appearanceLabel">鲸灵海底观测站 · 裙装全身版</span>
+              </div>
+              <div class="panel-toolbar">
+                <button class="primary-button" id="chooseBackground">选择自己的图片</button>
+                <button class="ghost-button" id="resetAppearance">恢复默认</button>
+              </div>
+              <div class="toggle-row"><span>在 Harness 中显示背景</span><input type="checkbox" id="appearanceEnabled" checked></div>
+              <div class="field"><label for="appearanceFit">图片适配</label><select id="appearanceFit"><option value="cover">填满窗口（推荐）</option><option value="contain">完整显示</option><option value="fill">拉伸填满</option></select></div>
+              <div class="field"><label for="appearancePosition">角色位置</label><select id="appearancePosition"><option value="center">居中</option><option value="right center">偏右</option><option value="left center">偏左</option><option value="center top">顶部居中</option></select></div>
+              <div class="range-row"><label for="appearanceOverlay">阅读遮罩</label><input type="range" id="appearanceOverlay" min="0" max="80" step="1" value="28"><span class="range-value" id="appearanceOverlayValue">28%</span></div>
+              <div class="range-row"><label for="appearanceBlur">背景模糊</label><input type="range" id="appearanceBlur" min="0" max="16" step="1" value="0"><span class="range-value" id="appearanceBlurValue">0px</span></div>
+              <div class="field"><label for="appearanceZoom">界面缩放</label><select id="appearanceZoom"><option value="0.9">90%</option><option value="1">100%（字体最清晰）</option><option value="1.1">110%</option><option value="1.25">125%</option></select></div>
+              <div class="panel-toolbar"><button class="primary-button" id="saveAppearance">应用外观</button></div>
+              <div class="warning-note">字体仍发糊时先选择 100%。Windows 的 125%/150% 系统缩放也会影响 WebView，小号灰字最明显。</div>
+            </section>
+
+            <section class="dock-panel" data-panel-body="policy">
+              <p class="panel-intro">这里设置新会话的默认权限。当前会话仍可在 DeepSeek Harness 内部切换，并会在敏感调用前请求批准。</p>
+              <div id="permissionChoices">
+                <div class="permission-card" data-mode="read-only"><strong>只读观察</strong><p>允许读取项目；写入和命令效果需要更严格的边界。</p></div>
+                <div class="permission-card" data-mode="workspace-write"><strong>项目内写入 · 推荐</strong><p>允许在当前项目中工作，越界操作继续请求批准。</p></div>
+                <div class="permission-card" data-mode="danger-full-access"><strong>完全访问</strong><p>关闭默认审批并放开沙盒，只适合完全可信的任务。</p></div>
+              </div>
+              <div class="warning-note">Windows 沙盒主要限制文件写入范围，不能完整隔离读取、网络或其他进程。完全访问会显著降低保护。</div>
+            </section>
+          </div>
+        </aside>
+      </section>
+
+      <section class="terminal" aria-label="集成终端">
+        <div class="terminal-header" id="terminalHeader">
+          <span class="terminal-title">终端</span>
+          <span class="terminal-cwd" id="terminalCwd">未选择项目</span>
+          <span class="terminal-status" id="terminalStatus">就绪</span>
+          <div class="terminal-actions">
+            <button class="icon-button" id="resetTerminalCwd" title="返回项目根目录">根目录</button>
+            <button class="icon-button" id="clearTerminal" title="清空终端输出">清空</button>
+            <button class="icon-button" id="stopCommand" title="停止正在执行的命令">停止</button>
+          </div>
+        </div>
+        <div class="terminal-body">
+          <pre class="terminal-output" id="terminalOutput">Saoirse Terminal 0.4.1
+命令由你主动输入，并从当前项目目录运行。
+</pre>
+          <div class="terminal-input-row">
+            <span class="terminal-prompt">❯</span>
+            <input id="terminalInput" type="text" autocomplete="off" spellcheck="false" placeholder="输入命令，例如 npm test 或 git status">
+            <button class="primary-button" id="runCommand">运行</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="workspace.js"></script>
+</body>
+</html>

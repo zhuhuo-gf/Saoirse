@@ -4,13 +4,13 @@
 set -e
 
 APP_DIR="$(cd "$(dirname "$0")" && pwd)"
-DESKTOP_FILE="$HOME/.local/share/applications/bigfish.desktop"
+DESKTOP_FILE="$HOME/.local/share/applications/saoirse-desktop.desktop"
 mkdir -p "$HOME/.local/share/applications"
 
 cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
 Type=Application
-Name=Bigfish
+Name=Saoirse
 Comment=DeepSeek Harness 第三方桌面端
 Exec=bash -c "cd '$APP_DIR' && npm start"
 Icon=$APP_DIR/assets/icon.png
@@ -20,4 +20,4 @@ EOF
 
 chmod +x "$DESKTOP_FILE"
 echo "✅ 已创建快捷方式：$DESKTOP_FILE"
-echo "现在可以在应用菜单搜到 Bigfish 了（部分桌面环境需注销重登后显示）"
+echo "现在可以在应用菜单搜到 Saoirse 了（部分桌面环境需注销重登后显示）"
