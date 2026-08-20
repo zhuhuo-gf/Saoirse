@@ -1,6 +1,6 @@
 {
   "name": "saoirse-desktop",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Saoirse — an anime-inspired desktop companion for DeepSeek Harness",
   "private": true,
   "main": "main.js",

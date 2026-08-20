@@ -36,14 +36,17 @@ const HOST = '127.0.0.1';
 const READY_TIMEOUT_MS = 90 * 1000;
 const IDLE_NOTIFY_MS = 30 * 1000; // backend quiet for this long after activity => "done"
 
-// Configure this in release builds after Saoirse has its own update repository.
-// Keeping it empty prevents derivative builds from linking to Bigfish releases.
-const UPDATE_JSON_URL = process.env.SAOIRSE_UPDATE_JSON_URL || '';
+const UPDATE_JSON_URL = process.env.SAOIRSE_UPDATE_JSON_URL
+  || 'https://github.com/zhuhuo-gf/Saoirse/releases/latest/download/latest.json';
+const SETTINGS_OPEN_TITLE = '__SAOIRSE_OPEN_SETTINGS__';
+const SETTINGS_CLOSE_TITLE = '__SAOIRSE_CLOSE_SETTINGS__';
 
 /** @type {import('node:child_process').ChildProcess | null} */
 let dshProcess = null;
 /** @type {BrowserWindow | null} */
 let mainWindow = null;
+/** @type {BrowserWindow | null} */
+let settingsWindow = null;
 /** @type {BrowserWindow | null} */
 let petWindow = null;
 /** @type {BrowserWindow | null} */
@@ -724,6 +727,169 @@ function trayIconPath() {
 }
 
 // ---------------------------------------------------------------------------
+// Dedicated Harness settings window
+// ---------------------------------------------------------------------------
+function settingsWindowCss() {
+  return `
+    html, body {
+      min-width: 760px !important;
+      background: #edf3f8 !important;
+      font-family: "Segoe UI Variable Text", "Microsoft YaHei UI", "Segoe UI", sans-serif !important;
+    }
+    [role="dialog"][aria-modal="true"] {
+      width: min(1120px, calc(100vw - 48px)) !important;
+      max-width: none !important;
+      height: min(820px, calc(100vh - 48px)) !important;
+      max-height: none !important;
+      border: 1px solid rgba(84, 116, 148, .16) !important;
+      border-radius: 22px !important;
+      box-shadow: 0 24px 70px rgba(12, 35, 58, .18) !important;
+    }
+    [role="dialog"][aria-modal="true"] > nav {
+      width: 224px !important;
+      padding: 26px 16px 18px !important;
+      background: linear-gradient(180deg, rgba(226, 238, 248, .96), rgba(240, 246, 251, .9)) !important;
+      border-right: 1px solid rgba(84, 116, 148, .12) !important;
+    }
+    [role="dialog"][aria-modal="true"] > nav button {
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+    [role="dialog"][aria-modal="true"] > nav span {
+      white-space: nowrap !important;
+    }
+    [role="dialog"][aria-modal="true"] > div:last-child {
+      min-width: 0 !important;
+      background: rgba(250, 252, 254, .97) !important;
+    }
+    [role="dialog"][aria-modal="true"] > div:last-child > div:last-child {
+      padding: 8px 36px 36px !important;
+    }
+    @media (max-width: 880px) {
+      [role="dialog"][aria-modal="true"] {
+        width: calc(100vw - 24px) !important;
+        height: calc(100vh - 24px) !important;
+      }
+      [role="dialog"][aria-modal="true"] > nav { width: 190px !important; }
+    }
+  `;
+}
+
+function settingsLauncherScript() {
+  return `(() => {
+    if (window.__saoirseSettingsLauncherInstalled) return true;
+    window.__saoirseSettingsLauncherInstalled = true;
+    document.addEventListener('click', (event) => {
+      const button = event.target instanceof Element ? event.target.closest('button') : null;
+      if (!button || !button.classList.contains('VOzbGW_trigger')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      document.title = ${JSON.stringify(SETTINGS_OPEN_TITLE)};
+      setTimeout(() => { document.title = 'DeepSeek Harness'; }, 0);
+    }, true);
+    return true;
+  })()`;
+}
+
+function settingsBootstrapScript() {
+  return `new Promise((resolve) => {
+    let attempts = 0;
+    const finish = (value) => { clearInterval(timer); resolve(value); };
+    const timer = setInterval(() => {
+      const trigger = document.querySelector('button.VOzbGW_trigger');
+      if (trigger) {
+        trigger.click();
+        setTimeout(() => finish(Boolean(document.querySelector('[role="dialog"][aria-modal="true"]'))), 120);
+        return;
+      }
+      attempts += 1;
+      if (attempts >= 100) finish(false);
+    }, 80);
+    document.addEventListener('click', (event) => {
+      const button = event.target instanceof Element ? event.target.closest('button') : null;
+      if (!button || !button.classList.contains('VOzbGW_close')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      document.title = ${JSON.stringify(SETTINGS_CLOSE_TITLE)};
+    }, true);
+  })`;
+}
+
+function closeSettingsWindow() {
+  if (settingsWindow && !settingsWindow.isDestroyed()) settingsWindow.close();
+}
+
+function openSettingsWindow() {
+  if (!port) return;
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    if (settingsWindow.isMinimized()) settingsWindow.restore();
+    settingsWindow.show();
+    settingsWindow.focus();
+    return;
+  }
+
+  settingsWindow = new BrowserWindow({
+    title: `${APP_NAME} · 设置`,
+    icon: appIconPath(),
+    width: 1120,
+    height: 800,
+    minWidth: 820,
+    minHeight: 620,
+    backgroundColor: '#edf3f8',
+    show: false,
+    autoHideMenuBar: true,
+    webPreferences: {
+      partition: 'persist:saoirse-harness',
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  settingsWindow.on('page-title-updated', (event, title) => {
+    event.preventDefault();
+    if (title === SETTINGS_CLOSE_TITLE) {
+      closeSettingsWindow();
+      return;
+    }
+    settingsWindow?.setTitle(`${APP_NAME} · 设置`);
+  });
+  settingsWindow.on('closed', () => { settingsWindow = null; });
+  settingsWindow.webContents.on('before-input-event', (_event, input) => {
+    if (input.key === 'Escape') closeSettingsWindow();
+  });
+  settingsWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http://') || url.startsWith('https://')) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  settingsWindow.webContents.on('will-navigate', (event, url) => {
+    let origin = '';
+    try { origin = new URL(url).origin; } catch { event.preventDefault(); return; }
+    if (origin !== `http://${HOST}:${port}`) {
+      event.preventDefault();
+      if (url.startsWith('http://') || url.startsWith('https://')) shell.openExternal(url);
+    }
+  });
+  settingsWindow.webContents.once('did-finish-load', async () => {
+    if (!settingsWindow || settingsWindow.isDestroyed()) return;
+    try {
+      await settingsWindow.webContents.insertCSS(settingsWindowCss());
+      const opened = await settingsWindow.webContents.executeJavaScript(settingsBootstrapScript(), true);
+      if (!settingsWindow || settingsWindow.isDestroyed()) return;
+      settingsWindow.show();
+      settingsWindow.focus();
+      if (!opened) console.error('[saoirse] settings trigger was not found');
+    } catch (error) {
+      console.error('[saoirse] failed to open dedicated settings window:', error);
+      if (settingsWindow && !settingsWindow.isDestroyed()) settingsWindow.show();
+    }
+  });
+  settingsWindow.loadURL(`http://${HOST}:${port}/`);
+}
+
+// ---------------------------------------------------------------------------
 // Main window
 // ---------------------------------------------------------------------------
 function createWindow() {
@@ -794,6 +960,11 @@ function createWindow() {
       if (url.startsWith('http://') || url.startsWith('https://')) shell.openExternal(url);
       return { action: 'deny' };
     });
+    guest.on('page-title-updated', (event, title) => {
+      if (title !== SETTINGS_OPEN_TITLE) return;
+      event.preventDefault();
+      openSettingsWindow();
+    });
     guest.on('will-navigate', (event, url) => {
       let origin = '';
       try { origin = new URL(url).origin; } catch { event.preventDefault(); return; }
@@ -802,7 +973,11 @@ function createWindow() {
         if (url.startsWith('http://') || url.startsWith('https://')) shell.openExternal(url);
       }
     });
-    guest.on('did-finish-load', () => applyBackground());
+    guest.on('did-finish-load', async () => {
+      await applyBackground();
+      try { await guest.executeJavaScript(settingsLauncherScript(), true); }
+      catch (error) { console.error('[saoirse] settings launcher injection failed:', error); }
+    });
     guest.once('destroyed', () => {
       if (harnessGuest === guest) harnessGuest = null;
       harnessBgCssKey = null;
@@ -1419,6 +1594,7 @@ async function stopDshAndWait() {
 async function restartBackendForWorkspace() {
   if (backendRestartPromise) return backendRestartPromise;
   backendRestartPromise = (async () => {
+    closeSettingsWindow();
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('workspace:backend-state', { status: 'restarting' });
     }
@@ -1851,6 +2027,7 @@ if (!gotLock) {
 
   app.on('before-quit', () => {
     quitting = true;
+    closeSettingsWindow();
     globalShortcut.unregisterAll();
     stopCompletionWatcher();
     stopTerminal();

@@ -1,5 +1,7 @@
 {
-  "version": "0.4.1",
-  "note": "Saoirse Desktop with full-body skirt character background and user appearance DIY controls",
-  "urls": {}
+  "version": "0.4.2",
+  "note": "Saoirse 设置现已使用独立宽屏窗口，改善窄窗口中的中文排版与操作体验",
+  "urls": {
+    "win32": "https://github.com/zhuhuo-gf/Saoirse/releases/download/v0.4.2/Saoirse%20Setup%200.4.2.exe"
+  }
 }
